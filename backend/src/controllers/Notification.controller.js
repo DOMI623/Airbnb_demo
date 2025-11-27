@@ -2,10 +2,15 @@ import Notification from "../models/Notification.models.js";
 import { sendNotification } from "../sockets/notification.js";
 import NotificationType from "../models/NotificationType.model.js";
 import { sendEmail } from "../utils/email.js";
+import User from "../models/User.models.js";
 
 export const createNotification = async (req, res) => {
   try {
     const { user, typeName, message } = req.body;
+
+    if (!user || !typeName || !message) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
 
     const type = await NotificationType.findOne({ name: typeName });
     if (!type) {
@@ -25,56 +30,75 @@ export const createNotification = async (req, res) => {
     }
 
     if (type.sendEmail) {
-      await sendEmail(user, message);
+      const userData = await User.findById(user);
+
+      if (!userData) {
+        console.log("Usuario no encontrado para enviar email");
+      } else if (!userData.email) {
+        console.log("Usuario no tiene email registrado");
+      } else {
+        await sendEmail(userData.email, message);
+      }
     }
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Notification sent successfully",
       notification: saved,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error", error: error.message });
+    console.error("Error creating notification:", error);
+    return res.status(500).json({ message: "Error", error: error.message });
   }
 };
 
 export const getNotificationsByUser = async (req, res) => {
   try {
     const { userId } = req.params;
+
     const notifications = await Notification.find({ user: userId }).sort({
       createdAt: -1,
     });
-    res.status(200).json({ notifications });
+
+    return res.status(200).json({ notifications });
   } catch (error) {
-    res.status(500).json({ message: "Error", error: error.message });
+    return res.status(500).json({ message: "Error", error: error.message });
   }
 };
 
 export const markNotificationAsRead = async (req, res) => {
   try {
     const { notificationId } = req.params;
+
     const updated = await Notification.findByIdAndUpdate(
       notificationId,
       { read: true },
       { new: true }
     );
-    res
-      .status(200)
-      .json({ message: "Notification marked as read", notification: updated });
+
+    return res.status(200).json({
+      message: "Notification marked as read",
+      notification: updated,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error", error: error.message });
+    return res.status(500).json({ message: "Error", error: error.message });
   }
 };
 
 export const deleteNotification = async (req, res) => {
   try {
     const { notificationId } = req.params;
+
     const deleted = await Notification.findByIdAndDelete(notificationId);
-    if (!deleted)
+
+    if (!deleted) {
       return res.status(404).json({ message: "Notification not found" });
-    res
-      .status(200)
-      .json({ message: "Notification deleted", notification: deleted });
+    }
+
+    return res.status(200).json({
+      message: "Notification deleted",
+      notification: deleted,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error", error: error.message });
+    return res.status(500).json({ message: "Error", error: error.message });
   }
 };
