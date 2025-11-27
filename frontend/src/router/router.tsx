@@ -1,3 +1,4 @@
+// src/router/router.tsx
 import {
   BrowserRouter as Router,
   Routes,
@@ -5,30 +6,22 @@ import {
   useLocation,
   Navigate,
 } from "react-router-dom";
-
 import { ToastContainer } from "react-toastify";
 
-// Layout
 import SideBar from "../layouts/SideBar";
-
-// Pages
 import HomePage from "../pages/HomePage";
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 import ListingsPage from "../pages/listings/ListingsPage";
 import BookingPage from "../pages/booking/BookingPage";
 import NotFound from "../pages/NotFound";
-import type { JSX } from "react";
 
-// Protected route component
-function ProtectedRoute({ children }: { children: JSX.Element }) {
-  const token = localStorage.getItem("token");
+import useAuth from "../hooks/useAuth";
 
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return children;
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  if (!user?.token) return <Navigate to="/login" replace />;
+  return <>{children}</>;
 }
 
 export default function AppRouter() {
@@ -42,9 +35,8 @@ export default function AppRouter() {
 
 function AppContent() {
   const location = useLocation();
-  const token = localStorage.getItem("token");
+  const { user } = useAuth();
 
-  // Rutas donde NO se muestra el sidebar
   const hideSidebarRoutes = ["/login", "/register"];
   const shouldHideSidebar = hideSidebarRoutes.includes(
     location.pathname.toLowerCase()
@@ -52,18 +44,15 @@ function AppContent() {
 
   return (
     <div className="flex min-h-screen">
-      {token && !shouldHideSidebar && <SideBar />}
+      {user?.token && !shouldHideSidebar && <SideBar />}
 
       <main className="flex-1">
         <Routes>
-          {/* Redirigir root -> login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
 
-          {/* Auth */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
-          {/* Dashboard / Home */}
           <Route
             path="/dashboard"
             element={
@@ -72,8 +61,6 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-
-          {/* Listings */}
           <Route
             path="/listings"
             element={
@@ -82,8 +69,6 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-
-          {/* Booking */}
           <Route
             path="/booking/:id"
             element={
@@ -93,7 +78,6 @@ function AppContent() {
             }
           />
 
-          {/* 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

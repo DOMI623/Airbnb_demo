@@ -1,39 +1,85 @@
+// src/pages/auth/LoginPage.tsx
 import { useState } from "react";
-import { userService } from "../../services/userService";
+import { useNavigate, Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import api from "../../api/axios";
+import useAuth from "../../hooks/useAuth";
+import type { User } from "../../types/user.types";
 
-export default function Login() {
+interface LoginResponse {
+  token: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+}
+
+export default function LoginPage() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await userService.login({ email, password });
-      console.log("LOGIN OK:", res.data);
-    } catch (error) {
-      console.log("ERROR LOGIN:", error);
+      const res = await api.post("/users/login", { email, password });
+      const data = res.data as LoginResponse;
+
+      const user: User = {
+        id: data.user.id,
+        name: data.user.name,
+        email: data.user.email,
+        role: data.user.role,
+        token: data.token,
+      };
+
+      login(user);
+      toast.success("Bienvenido");
+      navigate("/dashboard");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      toast.error(e.response?.data?.message || "Credenciales incorrectas");
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex items-center justify-center h-screen bg-gray-100">
       <form
-        className="p-6 shadow-lg bg-white flex flex-col gap-4"
-        onSubmit={onSubmit}
+        onSubmit={handleSubmit}
+        className="bg-white p-8 rounded-2xl w-96 shadow-xl"
       >
-        <h2 className="text-xl font-bold">Login</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h2>
+
         <input
-          className="border p-2"
-          placeholder="Email"
+          type="email"
+          placeholder="Correo electrónico"
+          value={email}
           onChange={(e) => setEmail(e.target.value)}
+          className="w-full border p-3 rounded-lg mb-4"
         />
+
         <input
-          className="border p-2"
-          placeholder="Password"
           type="password"
+          placeholder="Contraseña"
+          value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className="w-full border p-3 rounded-lg mb-4"
         />
-        <button className="bg-blue-500 text-white p-2">Entrar</button>
+
+        <button className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700">
+          Entrar
+        </button>
+
+        <p className="text-center mt-4">
+          ¿No tienes cuenta?{" "}
+          <Link to="/register" className="text-blue-600">
+            Crea una aquí
+          </Link>
+        </p>
       </form>
     </div>
   );

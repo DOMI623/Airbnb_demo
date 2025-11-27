@@ -1,3 +1,12 @@
+// src/types/user.types.ts
+export interface User {
+    id: string;
+    name: string;
+    email: string;
+    role?: string;
+    token?: string;
+}
+
 export interface RegisterDto {
     name: string;
     email: string;
