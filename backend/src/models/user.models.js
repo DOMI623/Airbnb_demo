@@ -57,21 +57,16 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// 🔒 Hash de password antes de guardar
 userSchema.pre("save", async function () {
   if (this.isModified("password")) {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
   }
-  // Actualizar updatedAt en el mismo hook
   this.updatedAt = Date.now();
 });
 
-// ✅ Método para comparar password
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-const User = mongoose.model("User", userSchema);
-
-export default User;
+export default mongoose.models.User || mongoose.model("User", userSchema);

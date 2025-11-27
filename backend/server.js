@@ -1,37 +1,49 @@
 import dotenv from "dotenv";
 import http from "http";
 import { Server } from "socket.io";
-import app from "./App.js";
+import express from "express";
 import { connectDB } from "./src/config/db.js";
 import { seedNotificationTypes } from "./src/seed/notificationType.seed.js";
+import { socketMiddleware } from "./src/middlewares/socketMiddleware.js";
+
+import userRouter from "./src/routes/user.routes.js";
+import NotificationRouter from "./src/routes/Notification.routes.js";
+import bookingRouter from "./src/routes/booking.routes.js";
+import NotificationTypeRouter from "./src/routes/NotificationType.routes.js";
+import MessageRouter from "./src/routes/message.routes.js";
 
 dotenv.config();
 
 const PORT = process.env.PORT;
 
-// conectar a Mongo
 await connectDB();
-
-// ejecutar seed
 await seedNotificationTypes();
 
-// crear servidor HTTP
+const app = express();
+
+app.use(express.json());
+
 const server = http.createServer(app);
 
-// socket.io
 const io = new Server(server, {
   cors: {
     origin: "*",
   },
 });
 
-// injectar io a express
-app.use((req, res, next) => {
-  req.io = io;
-  next();
+app.use(socketMiddleware(io));
+
+// Rutas
+app.use("/api/bookings", bookingRouter);
+app.use("/api/users", userRouter);
+app.use("/api/notifications", NotificationRouter);
+app.use("/api/notification-types", NotificationTypeRouter);
+app.use("/api/chatAibnb", MessageRouter);
+
+app.get("/", (req, res) => {
+  res.send("Backend Airbnb funcionando");
 });
 
-// manejar conexiones
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
@@ -39,9 +51,12 @@ io.on("connection", (socket) => {
     socket.join(userId.toString());
     console.log(`User ${userId} joined room ${userId}`);
   });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
 });
 
-// iniciar servidor
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
 });

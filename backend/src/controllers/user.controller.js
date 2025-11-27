@@ -3,7 +3,6 @@ import { generateToken } from "../utils/jwt.js";
 import { validateRegisterInput } from "../utils/validateUser.js";
 
 // Registro de usuario controlador
-
 export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;

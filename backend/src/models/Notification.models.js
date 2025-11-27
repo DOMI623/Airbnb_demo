@@ -8,8 +8,8 @@ const notificationSchema = new mongoose.Schema(
       required: true,
     },
     type: {
-      type: String,
-      enum: ["booking", "message", "promotion", "system"],
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "NotificationType",
       required: true,
     },
     message: {
