@@ -37,8 +37,8 @@ const listingSchema = new mongoose.Schema(
       },
     ],
     category: {
-      type: String,
-      default: "apartamento",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
     },
     createdAt: {
       type: Date,

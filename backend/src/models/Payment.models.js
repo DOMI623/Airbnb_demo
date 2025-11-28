@@ -17,14 +17,14 @@ const paymentSchema = new mongoose.Schema(
       required: true,
     },
     status: {
-      type: String,
-      enum: ["pending", "completed", "failed", "refunded"],
-      default: "pending",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "StatusPayment",
+      required: true,
     },
     paymentMethod: {
-      type: String,
-      enum: ["credit_card", "paypal", "stripe", "cash"],
-      default: "credit_card",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PaymentMethod",
+      required: true,
     },
     createdAt: {
       type: Date,

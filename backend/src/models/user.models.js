@@ -5,25 +5,25 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, "El nombre es obligatorio"],
+      required: true,
       trim: true,
     },
     email: {
       type: String,
-      required: [true, "El correo es obligatorio"],
+      required: true,
       unique: true,
       lowercase: true,
       trim: true,
     },
     password: {
       type: String,
-      required: [true, "La contraseña es obligatoria"],
+      required: true,
       minlength: [6, "La contraseña debe tener al menos 6 caracteres"],
     },
     role: {
-      type: String,
-      enum: ["client", "host", "admin"],
-      default: "client",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "RoleType",
+      required: true,
     },
     avatar: {
       type: String,
@@ -34,15 +34,9 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
     address: {
-      type: String,
-      default: "",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Address",
     },
-    favorites: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Listing",
-      },
-    ],
     createdAt: {
       type: Date,
       default: Date.now,

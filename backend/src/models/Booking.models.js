@@ -21,9 +21,8 @@ const bookingSchema = new mongoose.Schema(
       required: true,
     },
     status: {
-      type: String,
-      enum: ["pending", "confirmed", "completed", "cancelled"],
-      default: "pending",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "BookingStatus",
     },
     totalPrice: {
       type: Number,

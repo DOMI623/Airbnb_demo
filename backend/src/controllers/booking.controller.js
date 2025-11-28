@@ -1,5 +1,6 @@
 import Booking from "../models/Booking.models.js";
 import Listing from "../models/Listing.models.js";
+import BookingStatus from "../models/statusBooking.models.js";
 
 // Crear un nuevo booking
 export const createBooking = async (req, res) => {
@@ -21,17 +22,19 @@ export const createBooking = async (req, res) => {
 
     const conflictingBooking = await Booking.findOne({
       listing,
-      $or: [
-        {
-          startDate: { $lte: endDate },
-          endDate: { $gte: startDate },
-        },
-      ],
+      $or: [{ startDate: { $lte: endDate }, endDate: { $gte: startDate } }],
     });
 
     if (conflictingBooking) {
       return res.status(400).json({
         message: "Este listing ya está reservado en ese rango de fechas",
+      });
+    }
+
+    const pendingStatus = await BookingStatus.findOne({ name: "pending" });
+    if (!pendingStatus) {
+      return res.status(500).json({
+        message: "Estado 'pending' no encontrado en BookingStatus",
       });
     }
 
@@ -41,13 +44,19 @@ export const createBooking = async (req, res) => {
       startDate,
       endDate,
       totalPrice,
+      status: pendingStatus._id,
     });
 
     const savedBooking = await newBooking.save();
 
+    const populatedBooking = await savedBooking
+      .populate("user")
+      .populate("listing")
+      .populate("status");
+
     res.status(201).json({
       message: "Booking creado exitosamente",
-      booking: savedBooking,
+      booking: populatedBooking,
     });
   } catch (error) {
     res.status(500).json({
@@ -60,7 +69,10 @@ export const createBooking = async (req, res) => {
 // Obtener todos los bookings
 export const getAllBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find().populate("user").populate("listing");
+    const bookings = await Booking.find()
+      .populate("user")
+      .populate("listing")
+      .populate("status");
 
     res.status(200).json({ bookings });
   } catch (error) {
@@ -78,7 +90,8 @@ export const getBookingById = async (req, res) => {
 
     const booking = await Booking.findById(id)
       .populate("user")
-      .populate("listing");
+      .populate("listing")
+      .populate("status");
 
     if (!booking) {
       return res.status(404).json({
@@ -124,17 +137,33 @@ export const deleteBooking = async (req, res) => {
 export const updateBooking = async (req, res) => {
   try {
     const { id } = req.params;
-    const { startDate, endDate, totalPrice } = req.body;
-    const updatedBooking = await Booking.findByIdAndUpdate(
-      id,
-      { startDate, endDate, totalPrice },
-      { new: true }
-    );
+    const { startDate, endDate, totalPrice, statusId } = req.body;
+
+    const updateData = { startDate, endDate, totalPrice };
+
+    if (statusId) {
+      const statusExists = await BookingStatus.findById(statusId);
+      if (!statusExists) {
+        return res.status(400).json({
+          message: "El status proporcionado no existe",
+        });
+      }
+      updateData.status = statusId;
+    }
+
+    const updatedBooking = await Booking.findByIdAndUpdate(id, updateData, {
+      new: true,
+    })
+      .populate("user")
+      .populate("listing")
+      .populate("status");
+
     if (!updatedBooking) {
       return res.status(404).json({
         message: "Booking no encontrado",
       });
     }
+
     res.status(200).json({
       message: "Booking actualizado exitosamente",
       booking: updatedBooking,

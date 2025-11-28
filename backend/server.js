@@ -11,6 +11,13 @@ import NotificationRouter from "./src/routes/Notification.routes.js";
 import bookingRouter from "./src/routes/booking.routes.js";
 import NotificationTypeRouter from "./src/routes/NotificationType.routes.js";
 import MessageRouter from "./src/routes/message.routes.js";
+import favoriteRouter from "./src/routes/favorite.route.js";
+import bookingsStatusRouter from "./src/routes/bookingStatus.routes.js";
+import listingRouter from "./src/routes/listing.routes.js";
+import categoriesRouter from "./src/routes/Categories.routes.js";
+import roleRouter from "./src/routes/role.routes.js";
+import authRouter from "./src/routes/auth.routes.js";
+import cors from "cors";
 
 dotenv.config();
 
@@ -20,6 +27,13 @@ await connectDB();
 await seedNotificationTypes();
 
 const app = express();
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 
@@ -34,13 +48,19 @@ const io = new Server(server, {
 app.use(socketMiddleware(io));
 
 // Rutas
+app.use("/api/auth", authRouter);
 app.use("/api/bookings", bookingRouter);
 app.use("/api/users", userRouter);
 app.use("/api/notifications", NotificationRouter);
 app.use("/api/notification-types", NotificationTypeRouter);
 app.use("/api/chatAibnb", MessageRouter);
+app.use("/api/favorites", favoriteRouter);
+app.use("/api/bookingsStatus", bookingsStatusRouter);
+app.use("/api/listings", listingRouter);
+app.use("/api/categories", categoriesRouter);
+app.use("/api/roles", roleRouter);
 
-app.get("/", (req, res) => {
+app.get("/", (res) => {
   res.send("Backend Airbnb funcionando");
 });
 

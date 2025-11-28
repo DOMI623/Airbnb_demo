@@ -1,34 +1,46 @@
 import User from "../models/user.models.js";
+import RoleType from "../models/roleType.models.js";
 import { generateToken } from "../utils/jwt.js";
 import { validateRegisterInput } from "../utils/validateUser.js";
 
-// Registro de usuario controlador
+// REGISTER
 export const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     const errorMsg = validateRegisterInput({ name, email, password });
     if (errorMsg) return res.status(400).json({ message: errorMsg });
 
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    if (existingUser)
       return res.status(400).json({ message: "El usuario ya existe" });
-    }
 
-    const newUser = new User({ name, email, password });
+    const roleDoc =
+      (await RoleType.findOne({ name: role })) ||
+      (await RoleType.findOne({ name: "client" }));
+
+    if (!roleDoc) return res.status(400).json({ message: "Rol no válido" });
+
+    const newUser = new User({
+      name,
+      email,
+      password,
+      role: roleDoc._id,
+    });
+
     await newUser.save();
 
-    const userResponse = {
-      id: newUser._id,
-      name: newUser.name,
-      email: newUser.email,
-      role: newUser.role,
-    };
+    const token = generateToken(newUser);
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Usuario registrado exitosamente",
       token,
-      user: userResponse,
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+      },
     });
   } catch (error) {
     console.error(error);
@@ -36,24 +48,22 @@ export const register = async (req, res) => {
   }
 };
 
-// Inicio de sesión de usuario controlador
+// LOGIN
 export const Login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) {
+    if (!user)
       return res.status(400).json({ message: "Usuario no encontrado" });
-    }
 
     const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "constraseña incorrecta" });
-    }
+    if (!isMatch)
+      return res.status(400).json({ message: "Contraseña incorrecta" });
 
     const token = generateToken(user);
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Inicio de sesión exitoso",
       token,
       user: {

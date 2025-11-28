@@ -10,6 +10,7 @@ import { protect } from "../middlewares/auth.middleware.js";
 const BookingRouter = express.Router();
 
 // Controller functions (to be implemented)
+
 BookingRouter.post("/create", protect, createBooking);
 BookingRouter.get("/GetAll", protect, getAllBookings);
 BookingRouter.get("/get/:id", protect, getBookingById);

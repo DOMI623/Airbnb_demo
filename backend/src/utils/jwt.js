@@ -4,14 +4,12 @@ dotenv.config();
 
 const SECRET_KEY = process.env.JWT_SECRET;
 
-// generate JWT token experied at 7 days
-
 export const generateToken = (user) => {
   return jwt.sign(
     {
-      id: user._id,
+      id: user._id, // CORRECTO
       email: user.email,
-      role: user.role,
+      role: user.role, // ObjectId del rol
     },
     SECRET_KEY,
     { expiresIn: "7d" }
