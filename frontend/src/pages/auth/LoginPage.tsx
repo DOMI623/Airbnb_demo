@@ -4,17 +4,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../../api/axios";
 import useAuth from "../../hooks/useAuth";
-import type { User } from "../../types/user.types";
-
-interface LoginResponse {
-  token: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-  };
-}
+import type { LoginDto } from "../../types/user.types";
+import type { AuthUser } from "../../context/AuthContext";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -25,19 +16,27 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const res = await api.post("/users/login", { email, password });
-      const data = res.data as LoginResponse;
 
-      const user: User = {
-        id: data.user.id,
-        name: data.user.name,
-        email: data.user.email,
-        role: data.user.role,
-        token: data.token,
+    const payload: LoginDto = { email, password };
+
+    try {
+      const res = await api.post("/users/login", payload);
+      const data = res.data as {
+        token: string;
+        user: { id: string; name: string; email: string; role?: string };
       };
 
-      login(user);
+      // 🎯 Construimos el tipo EXACTO que AuthContext espera
+      const authUser: AuthUser = {
+        token: data.token,
+        user: {
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+        },
+      };
+
+      login(authUser);
       toast.success("Bienvenido");
       navigate("/dashboard");
     } catch (err: unknown) {

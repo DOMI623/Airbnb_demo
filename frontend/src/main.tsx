@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import AppRouter from "./router/router";
-import AuthProvider from "./context/AuthContext"; // ← ahora sí existe
+import AuthProvider from "./context/AuthProvider";
 import "./index.css";
 import "react-toastify/dist/ReactToastify.css";
 

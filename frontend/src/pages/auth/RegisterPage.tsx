@@ -1,15 +1,9 @@
+// src/pages/auth/RegisterPage.tsx
 import { useState } from "react";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-
-interface HttpError {
-  response?: {
-    data?: {
-      message?: string;
-    };
-  };
-}
+import type { RegisterDto } from "../../types/user.types";
+import api from "../../api/axios";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -20,17 +14,14 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {
-      await axios.post("http://localhost:3000/api/users/register", {
-        name,
-        email,
-        password,
-      });
+    const payload: RegisterDto = { name, email, password };
 
+    try {
+      await api.post("/users/register", payload);
       toast.success("Registro exitoso");
       navigate("/login");
     } catch (error: unknown) {
-      const err = error as HttpError;
+      const err = error as { response?: { data?: { message?: string } } };
       toast.error(err.response?.data?.message || "Error al registrar");
     }
   };

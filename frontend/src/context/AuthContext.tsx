@@ -1,13 +1,22 @@
 import { createContext } from "react";
-import type { User } from "../types/user.types";
+
+export interface UserData {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface AuthUser {
+  token: string;
+  user: UserData;
+}
 
 export interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  login: (token: string, user: User) => void;
+  user: AuthUser | null;
+  login: (data: AuthUser) => void;
   logout: () => void;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
-);
+const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+
+export default AuthContext;

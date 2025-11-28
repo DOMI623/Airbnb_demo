@@ -1,4 +1,4 @@
-import { api } from "../api/axios";
+import api from "../api/axios";
 import type { LoginDto, RegisterDto } from "../types/user.types";
 
 export const userService = {
