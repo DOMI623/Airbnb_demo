@@ -1,4 +1,5 @@
 import Listing from "../models/Listing.models.js";
+import User from "../models/user.models.js";
 import { isValidObjectId } from "../utils/IsValidObjetct.js";
 
 export const getAllListings = async (req, res) => {
@@ -56,6 +57,20 @@ export const createListing = async (req, res) => {
 
     if (!isValidObjectId(host)) {
       return res.status(400).json({ message: "Host ID inválido" });
+    }
+
+    const hostUser = await User.findById(host).populate("role");
+
+    if (!hostUser) {
+      return res.status(404).json({
+        message: "El usuario especificado como host no existe",
+      });
+    }
+
+    if (!hostUser.role || hostUser.role.name !== "host") {
+      return res.status(403).json({
+        message: "Este usuario no tiene permisos de host",
+      });
     }
 
     if (category && !isValidObjectId(category)) {

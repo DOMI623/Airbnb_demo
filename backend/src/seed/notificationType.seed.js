@@ -14,5 +14,5 @@ export const seedNotificationTypes = async () => {
     });
   }
 
-  console.log("✔ Notification Types Seeded");
+  console.log("Notification Types Seeded");
 };

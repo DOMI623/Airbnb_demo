@@ -33,10 +33,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    address: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Address",
-    },
+    address: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Address",
+      },
+    ],
     createdAt: {
       type: Date,
       default: Date.now,

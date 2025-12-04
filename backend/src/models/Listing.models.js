@@ -40,22 +40,12 @@ const listingSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-    updatedAt: {
-      type: Date,
-      default: Date.now,
-    },
   },
-  { versionKey: false }
+  {
+    timestamps: true,
+    versionKey: false,
+  }
 );
-
-listingSchema.pre("save", function (next) {
-  this.updatedAt = Date.now();
-  next();
-});
 
 const Listing = mongoose.model("Listing", listingSchema);
 

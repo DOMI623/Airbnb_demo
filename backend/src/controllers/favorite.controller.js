@@ -55,7 +55,7 @@ export const removeFavorite = async (req, res) => {
 
     const favorite = await Favorite.findOneAndDelete({
       user: userId,
-      listing: listingId, // ← ahora sí correcto
+      listing: listingId,
     });
 
     if (!favorite) {

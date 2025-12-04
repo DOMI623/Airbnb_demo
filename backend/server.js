@@ -18,6 +18,7 @@ import categoriesRouter from "./src/routes/Categories.routes.js";
 import roleRouter from "./src/routes/role.routes.js";
 import authRouter from "./src/routes/auth.routes.js";
 import cors from "cors";
+import addressRouter from "./src/routes/address.routes.js";
 
 dotenv.config();
 
@@ -59,6 +60,7 @@ app.use("/api/bookingsStatus", bookingsStatusRouter);
 app.use("/api/listings", listingRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/roles", roleRouter);
+app.use("/api/addresses", addressRouter);
 
 app.get("/", (res) => {
   res.send("Backend Airbnb funcionando");
