@@ -29,6 +29,7 @@ export const register = async (req, res) => {
     });
 
     await newUser.save();
+    await newUser.populate("role");
 
     const token = generateToken(newUser);
 
@@ -53,7 +54,7 @@ export const Login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).populate("role");
     if (!user)
       return res.status(400).json({ message: "Usuario no encontrado" });
 
